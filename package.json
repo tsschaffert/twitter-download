@@ -11,7 +11,7 @@
     "request": "^2.79.0",
     "request-promise-native": "^1.0.3",
     "ts-node": "^2.0.0",
-    "twitter": "^1.7.0",
+    "twit": "^2.2.5",
     "typescript": "^2.1.5"
   },
   "scripts": {
