@@ -1,5 +1,29 @@
 var twit = require('twit');
 
+interface SearchWrapper { 
+    statuses: SearchResult[],
+    search_metadata: {
+        max_id_str: string,
+        query: string,
+        count: number,
+        next_results: string
+    }
+}
+
+interface SearchResult {
+    created_at: string,
+    id_str: string,
+    text: string,
+    retweeted: boolean,
+    user: {
+        id: number,
+        id_str: string,
+        screen_name: string
+    }
+}
+
+
+
 export default class TwitWrapper {
     private T: any;
 
@@ -14,30 +38,13 @@ export default class TwitWrapper {
         this.T = new twit(config);
     }
 
-    public search(query: string, count: number = 100, maxId?: string, lang: string = 'en'): Promise<{ 
-        statuses: {
-            created_at: string,
-            id_str: string,
-            text: string,
-            retweeted: boolean,
-            user: {
-                id: number,
-                id_str: string,
-                screen_name: string
-            }
-        }[],
-        search_metadata: {
-            max_id_str: string,
-            query: string,
-            count: number
-        }
-    }> {
-        return this.T.get('search/tweets', { q: query, count: count, lang: lang, max_id: maxId }).then((result) => {
+    public search(query: string, count: number = 100, maxId?: string, lang: string = 'en'): Promise<SearchWrapper> {
+        return this.T.get('search/tweets', { q: query, count: count, lang: lang, max_id: maxId, result_type: 'recent' }).then((result) => {
             return result.data;
         });
     }
 
-    public getTimeline(user: string | number, count: number = 200, maxId?: number, excludeReplies: boolean = true, includeRts: boolean = false, trimUser: boolean = true): Promise<{
+    public getTimeline(user: string | number, count: number = 200, maxId?: string, excludeReplies: boolean = true, includeRts: boolean = false, trimUser: boolean = true): Promise<{
         created_at: string,
         id_str: string,
         text: string,
