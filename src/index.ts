@@ -69,7 +69,9 @@ async function storeTimeline(screenName: string, userId: string) {
             }
         }    
 
-        fs.writeFileSync(`out/${userId}.json`, JSON.stringify(tweets, null, 2), 'utf8');
+        if (tweets.length > 0) {
+            fs.writeFileSync(`out/${userId}.json`, JSON.stringify(tweets, null, 2), 'utf8');
+        }
 
         grabbedUsers.push(userId);
     }
