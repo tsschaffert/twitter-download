@@ -15,7 +15,6 @@ interface IndexEntry {
 }
 
 var index: IndexEntry[] = [];
-var grabbedUsers: string[] = [];
 
 async function test() {
     searchComplete('have been hacked OR was hacked OR twitter hacked OR account hacked');
@@ -48,7 +47,8 @@ async function searchComplete(query: string, lang: string = 'en') {
 }
 
 async function storeTimeline(screenName: string, userId: string) {
-    if (grabbedUsers.indexOf(userId) === -1) {
+    var filename = `out/${userId}.json`;
+    if (!fs.existsSync(filename)) {
         let tweets = [];
         let tweetResult = await T.getTimeline(screenName, 200);
 
@@ -72,8 +72,6 @@ async function storeTimeline(screenName: string, userId: string) {
         if (tweets.length > 0) {
             fs.writeFileSync(`out/${userId}.json`, JSON.stringify(tweets, null, 2), 'utf8');
         }
-
-        grabbedUsers.push(userId);
     }
 }
 
