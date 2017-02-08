@@ -78,4 +78,10 @@ export class TwitWrapper {
             return result.data;
         });
     }
+
+    public showUser(userId: string): Promise<User> {
+        return this.T.get('users/show', { user_id: userId }).then((result) => {
+            return result.data;
+        });
+    }
 }
