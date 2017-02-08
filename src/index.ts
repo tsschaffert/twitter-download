@@ -30,11 +30,11 @@ async function searchComplete(query: string, lang: string = 'en') {
                 console.log(`** ${result.text} **`);
  
                 // Store user timeline
-                await storeTimeline(result.user.screen_name, result.user.id_str);
+                await storeTimeline(result.user.id_str);
 
                 // Store timelines of mentioned users as well
                 for (let mention of result.entities.user_mentions) {
-                    await storeTimeline(mention.screen_name, mention.id_str);
+                    await storeTimeline(mention.id_str);
                 }
 
                 // Update index (to connect search result with user files)
@@ -46,11 +46,11 @@ async function searchComplete(query: string, lang: string = 'en') {
     }
 }
 
-async function storeTimeline(screenName: string, userId: string) {
+async function storeTimeline(userId: string) {
     var filename = `out/${userId}.json`;
     if (!fs.existsSync(filename)) {
         let tweets = [];
-        let tweetResult = await T.getTimeline(screenName, 200);
+        let tweetResult = await T.getTimelineSafe(userId, 200);
 
         while (tweetResult.length > 0) {
             tweets = tweets.concat(tweetResult);
@@ -63,15 +63,13 @@ async function storeTimeline(screenName: string, userId: string) {
                 }
             }
 
-            tweetResult = await T.getTimeline(screenName, 200, minId);
+            tweetResult = await T.getTimelineSafe(userId, 200, minId);
             if (tweetResult.length > 0) {
                 tweetResult.splice(0, 1);
             }
         }    
 
-        if (tweets.length > 0) {
-            fs.writeFileSync(`out/${userId}.json`, JSON.stringify(tweets, null, 2), 'utf8');
-        }
+        fs.writeFileSync(`out/${userId}.json`, JSON.stringify(tweets, null, 2), 'utf8');
     }
 }
 

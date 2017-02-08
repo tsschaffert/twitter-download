@@ -24,7 +24,6 @@ export interface SearchResult {
 }
 
 interface User {
-    id: number,
     id_str: string,
     screen_name: string
 }
@@ -36,6 +35,15 @@ interface Url {
 
 interface Hashtag {
     text: string
+}
+
+interface Tweet {
+    created_at: string,
+    id_str: string,
+    text: string,
+    user: {
+        id_str: string
+    }
 }
 
 export class TwitWrapper {
@@ -54,33 +62,62 @@ export class TwitWrapper {
 
     public search(query: string, count: number = 100, maxId?: string, lang: string = 'en'): Promise<SearchWrapper> {
         return this.T.get('search/tweets', { q: query, count: count, lang: lang, max_id: maxId, result_type: 'recent' }).then((result) => {
+            if (result.data.errors && result.data.errors.length > 0) {
+                throw result.data.errors;
+            }
+
             return result.data;
         });
     }
 
-    public getTimeline(user: string | number, count: number = 200, maxId?: string, excludeReplies: boolean = true, includeRts: boolean = false, trimUser: boolean = true): Promise<{
-        created_at: string,
-        id_str: string,
-        text: string,
-        user: {
-            id: number,
-            id_str: string
-        }
-    }[]> {
-        let userId: number = null;
-        let screenName: string = null;
-        if (typeof user === 'number') {
-            userId = user;
-        } else {
-            screenName = user;
-        }
-        return this.T.get('statuses/user_timeline', { user_id: userId, screen_name: screenName, count: count, max_id: maxId, exclude_replies: excludeReplies, include_rts: includeRts, trim_user: trimUser }).then((result) => {
+    public getTimeline(userId: string, count: number = 200, maxId?: string, excludeReplies: boolean = true, includeRts: boolean = false, trimUser: boolean = true): Promise<Tweet[]> {
+        return this.T.get('statuses/user_timeline', { user_id: userId, count: count, max_id: maxId, exclude_replies: excludeReplies, include_rts: includeRts, trim_user: trimUser }).then((result) => {
+            if (result.data.errors && result.data.errors.length > 0) {
+                throw result.data.errors;
+            }
+
             return result.data;
         });
     }
+
+     public async getTimelineSafe(userId: string, count: number = 200, maxId?: string, excludeReplies: boolean = true, includeRts: boolean = false, trimUser: boolean = true): Promise<Tweet[]> {
+        let timelineResult = null;
+
+        while (timelineResult === null) {
+            timelineResult = await new Promise((resolve, reject) => {
+                this.getTimeline(userId, count, maxId, excludeReplies, includeRts, trimUser).then((result) => {
+                    resolve(result);
+                }).catch((error) => {
+                    console.log(error);
+
+                    setTimeout(() => {
+                        resolve(null);
+                    }, 60000);
+                });
+            });
+        }
+
+        return timelineResult;
+    }
+
+
 
     public showUser(userId: string): Promise<User> {
         return this.T.get('users/show', { user_id: userId }).then((result) => {
+            if (result.data.errors && result.data.errors.length > 0) {
+                throw result.data.errors;
+            }
+
+            return result.data;
+        });
+    }
+
+    public getLimits(resources: string): Promise<User> {
+        return this.T.get('application/rate_limit_status', { resources: resources }).then((result) => {
+            if (result.data.errors && result.data.errors.length > 0) {
+                throw result.data.errors;
+            }
+
             return result.data;
         });
     }
