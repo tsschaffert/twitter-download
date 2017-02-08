@@ -1,6 +1,6 @@
 var twit = require('twit');
 
-interface SearchWrapper { 
+export interface SearchWrapper { 
     statuses: SearchResult[],
     search_metadata: {
         max_id_str: string,
@@ -10,21 +10,35 @@ interface SearchWrapper {
     }
 }
 
-interface SearchResult {
+export interface SearchResult {
     created_at: string,
     id_str: string,
     text: string,
     retweeted: boolean,
-    user: {
-        id: number,
-        id_str: string,
-        screen_name: string
+    user: User,
+    entities: {
+        urls: Url[],
+        hashtags: Hashtag[],
+        user_mentions: User[]
     }
 }
 
+interface User {
+    id: number,
+    id_str: string,
+    screen_name: string
+}
 
+interface Url {
+    url: string,
+    expanded_url: string
+}
 
-export default class TwitWrapper {
+interface Hashtag {
+    text: string
+}
+
+export class TwitWrapper {
     private T: any;
 
     constructor(config: {
