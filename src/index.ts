@@ -17,14 +17,13 @@ interface IndexEntry {
 var index: IndexEntry[] = [];
 
 async function test() {
-    searchComplete('have been hacked OR was hacked OR twitter hacked OR account hacked');
+    searchComplete('#NaziAlmanya #nazihollanda bu size ufakbir', null);
 }
 
 async function searchComplete(query: string, lang: string = 'en') {
     let results = await T.search(query, 100, undefined, lang);
 
-    while(results.search_metadata.count > 0) {
-        let nextMaxId = /max_id=([0-9]+)/.exec(results.search_metadata.next_results)[1];
+    while(results.search_metadata.count > 0) {       
         for (let result of results.statuses) {
             if(!result.retweeted) {
                 console.log(`** ${result.text} **`);
@@ -42,7 +41,13 @@ async function searchComplete(query: string, lang: string = 'en') {
             }
         }
 
-        results = await T.search(query, 100, nextMaxId, lang);
+        if (results.search_metadata.next_results) {
+            let nextMaxId = /max_id=([0-9]+)/.exec(results.search_metadata.next_results)[1];
+            results = await T.search(query, 100, nextMaxId, lang);
+        } else {
+            break;
+        }
+        
     }
 }
 
