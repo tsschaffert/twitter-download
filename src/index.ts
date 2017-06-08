@@ -7,19 +7,10 @@ const optionDefinitions = [
 ];
 
 var T = new TwitWrapper({
-        consumer_key: 'gP2Tuc7uygn95weeVzwlj6A2b',
-        consumer_secret: 'o9onFEm6Oqvamz9ohPwx4UEPKmjRiyMe3vc7le7qCJLW6CvKPs',
-        app_only_auth: true
-    });
-
-interface IndexEntry {
-    userId: string,
-    tweetId: string,
-    tweetText: string,
-    mentionedUserIds: string[]
-}
-
-var index: IndexEntry[] = [];
+    consumer_key: 'gP2Tuc7uygn95weeVzwlj6A2b',
+    consumer_secret: 'o9onFEm6Oqvamz9ohPwx4UEPKmjRiyMe3vc7le7qCJLW6CvKPs',
+    app_only_auth: true
+});
 
 function main(options) {
     if (options.query === undefined) {
@@ -29,10 +20,6 @@ function main(options) {
     }
 
     searchComplete(options.query, null);
-}
-
-async function test() {
-    searchComplete('have been hacked OR was hacked OR twitter hacked OR account hacked', null);
 }
 
 async function searchComplete(query: string, lang: string = 'en') {
@@ -50,9 +37,6 @@ async function searchComplete(query: string, lang: string = 'en') {
                 for (let mention of result.entities.user_mentions) {
                     await storeTimeline(mention.id_str);
                 }
-
-                // Update index (to connect search result with user files)
-                updateIndex(result);
             }
         }
 
@@ -91,25 +75,6 @@ async function storeTimeline(userId: string) {
 
         fs.writeFileSync(`out/${userId}.json`, JSON.stringify(tweets, null, 2), 'utf8');
     }
-}
-
-function updateIndex(result: SearchResult) {
-    let entry: IndexEntry = {
-        userId: result.user.id_str,
-        tweetId: result.id_str,
-        tweetText: result.text,
-        mentionedUserIds: result.entities.user_mentions.map((value, index) => value.id_str)
-    };
-
-    if (index.length === 0) {
-        if (fs.existsSync('out/index.json')) {
-            index = JSON.parse(fs.readFileSync('out/index.json', 'utf8'));
-        }
-    }
-
-    index.push(entry);
-
-    fs.writeFileSync('out/index.json', JSON.stringify(index, null, 2), 'utf8');
 }
 
 main(commandLineArgs(optionDefinitions))
