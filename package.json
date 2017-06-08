@@ -7,6 +7,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^7.0.0",
+    "command-line-args": "^4.0.6",
     "nodemon": "^1.11.0",
     "request": "^2.79.0",
     "request-promise-native": "^1.0.3",
@@ -17,5 +18,6 @@
   "scripts": {
     "build:live": "nodemon --exec .\\node_modules\\.bin\\ts-node -- .\\index.ts",
     "start": "tsc && node bin/index.js"
-  }
+  },
+  "dependencies": {}
 }

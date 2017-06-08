@@ -1,5 +1,10 @@
 import { TwitWrapper, SearchResult } from "./TwitWrapper";
-var fs = require('fs');
+const fs = require('fs');
+const commandLineArgs = require('command-line-args');
+
+const optionDefinitions = [
+  { name: 'query', type: String, multiple: false, defaultOption: true }
+];
 
 var T = new TwitWrapper({
         consumer_key: 'gP2Tuc7uygn95weeVzwlj6A2b',
@@ -16,8 +21,18 @@ interface IndexEntry {
 
 var index: IndexEntry[] = [];
 
+function main(options) {
+    if (options.query === undefined) {
+        console.error("Search query is needed.");
+        process.exit(1);
+        return;
+    }
+
+    searchComplete(options.query, null);
+}
+
 async function test() {
-    searchComplete('#NaziAlmanya #nazihollanda bu size ufakbir', null);
+    searchComplete('have been hacked OR was hacked OR twitter hacked OR account hacked', null);
 }
 
 async function searchComplete(query: string, lang: string = 'en') {
@@ -97,4 +112,4 @@ function updateIndex(result: SearchResult) {
     fs.writeFileSync('out/index.json', JSON.stringify(index, null, 2), 'utf8');
 }
 
-test();
+main(commandLineArgs(optionDefinitions))
