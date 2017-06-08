@@ -1,6 +1,7 @@
 import { TwitWrapper, SearchResult } from "./TwitWrapper";
 const fs = require('fs');
 const commandLineArgs = require('command-line-args');
+const sanitize = require('sanitize-filename');
 
 const optionDefinitions = [
   { name: 'query', type: String, multiple: false, defaultOption: true }
@@ -23,6 +24,13 @@ function main(options) {
 }
 
 async function searchComplete(query: string, lang: string = 'en') {
+    // Determine subfolder name and create it
+    let queryFolder = sanitize(query);
+    let foldername = `out/${queryFolder}`;
+    if (!fs.existsSync(foldername)) {
+        fs.mkdirSync(foldername);
+    }
+
     let results = await T.search(query, 100, undefined, lang);
 
     while(results.search_metadata.count > 0) {       
@@ -31,7 +39,7 @@ async function searchComplete(query: string, lang: string = 'en') {
                 console.log(`** ${result.text} **`);
  
                 // Store user timeline
-                await storeTimeline(result.user.id_str);
+                await storeTimeline(result.user.id_str, `${foldername}/${result.user.id_str}.json`);
             }
         }
 
@@ -45,8 +53,7 @@ async function searchComplete(query: string, lang: string = 'en') {
     }
 }
 
-async function storeTimeline(userId: string) {
-    var filename = `out/${userId}.json`;
+async function storeTimeline(userId: string, filename: string) {
     if (!fs.existsSync(filename)) {
         let tweets = [];
         let tweetResult = await T.getTimelineSafe(userId, 200);
@@ -68,7 +75,7 @@ async function storeTimeline(userId: string) {
             }
         }    
 
-        fs.writeFileSync(`out/${userId}.json`, JSON.stringify(tweets, null, 2), 'utf8');
+        fs.writeFileSync(filename, JSON.stringify(tweets, null, 2), 'utf8');
     }
 }
 
