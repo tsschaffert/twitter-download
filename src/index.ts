@@ -32,11 +32,6 @@ async function searchComplete(query: string, lang: string = 'en') {
  
                 // Store user timeline
                 await storeTimeline(result.user.id_str);
-
-                // Store timelines of mentioned users as well
-                for (let mention of result.entities.user_mentions) {
-                    await storeTimeline(mention.id_str);
-                }
             }
         }
 
